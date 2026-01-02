@@ -71,17 +71,13 @@ export function createServerInstance() {
     {
       title: "Render SVG",
       description: "Renders SVG code to a PNG image for visual verification.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-          width: { type: "number" },
-          height: { type: "number" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
     },
-    async ({ svg_code, width, height }: any) => {
+    async ({ svg_code, width, height }) => {
       const validation = validateSvgContent(svg_code);
       if (!validation.valid) {
         throw new Error(`Invalid SVG: ${validation.errors.join("; ")}`);
@@ -113,17 +109,13 @@ export function createServerInstance() {
     {
       title: "Save SVG",
       description: "Saves the SVG code to a file on the local system.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-          filename: { type: "string" },
-          optimize: { type: "boolean", default: true },
-        },
-        required: ["svg_code", "filename"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+        filename: z.string(),
+        optimize: z.boolean().optional().default(true),
+      }),
     },
-    async ({ svg_code, filename, optimize: shouldOptimize }: any) => {
+    async ({ svg_code, filename, optimize: shouldOptimize }) => {
       try {
         let content = svg_code;
         if (shouldOptimize) {
@@ -164,15 +156,11 @@ export function createServerInstance() {
     {
       title: "Optimize SVG",
       description: "Optimizes and minifies SVG code using SVGO.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+      }),
     },
-    async ({ svg_code }: any) => {
+    async ({ svg_code }) => {
       try {
         const result = optimize(svg_code, {
           multipass: true,
@@ -195,15 +183,11 @@ export function createServerInstance() {
     {
       title: "Format SVG",
       description: "Prettifies SVG code.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+      }),
     },
-    async ({ svg_code }: any) => {
+    async ({ svg_code }) => {
       try {
         const formatted = format(svg_code, {
           indentation: "  ",
@@ -227,16 +211,12 @@ export function createServerInstance() {
     {
       title: "SVG to React",
       description: "Converts SVG code to a React Functional Component.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-          component_name: { type: "string", default: "SvgComponent" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+        component_name: z.string().optional().default("SvgComponent"),
+      }),
     },
-    async ({ svg_code, component_name }: any) => {
+    async ({ svg_code, component_name }) => {
       try {
         const jsCode = await transform(
           svg_code,
@@ -260,16 +240,12 @@ export function createServerInstance() {
     {
       title: "SVG to React Native",
       description: "Converts SVG code to a React Native Component.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-          component_name: { type: "string", default: "SvgComponent" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+        component_name: z.string().optional().default("SvgComponent"),
+      }),
     },
-    async ({ svg_code, component_name }: any) => {
+    async ({ svg_code, component_name }) => {
       try {
         const jsCode = await transform(
           svg_code,
@@ -293,15 +269,11 @@ export function createServerInstance() {
     {
       title: "SVG to Data URI",
       description: "Converts SVG code into a base64-encoded Data URI.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+      }),
     },
-    async ({ svg_code }: any) => {
+    async ({ svg_code }) => {
       try {
         const encoded = Buffer.from(svg_code).toString("base64");
         return {
@@ -321,15 +293,11 @@ export function createServerInstance() {
     {
       title: "SVG to PDF",
       description: "Converts SVG code into a PDF document.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+      }),
     },
-    async ({ svg_code }: any) => {
+    async ({ svg_code }) => {
       try {
         const filename = `${uuidv4()}.pdf`;
         const filepath = path.join(OUTPUT_DIR, filename);
@@ -362,15 +330,11 @@ export function createServerInstance() {
      {
       title: "Validate SVG",
       description: "Validates SVG code.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+      }),
     },
-    async ({ svg_code }: any) => {
+    async ({ svg_code }) => {
       const result = validateSvgContent(svg_code);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
@@ -383,15 +347,11 @@ export function createServerInstance() {
     {
       title: "Get SVG Metadata",
       description: "Extracts metadata from SVG code.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          svg_code: { type: "string" },
-        },
-        required: ["svg_code"],
-      },
+      inputSchema: z.object({
+        svg_code: z.string(),
+      }),
     },
-    async ({ svg_code }: any) => {
+    async ({ svg_code }) => {
       try {
         const parser = new XMLParser({
             ignoreAttributes: false,

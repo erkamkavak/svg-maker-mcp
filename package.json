@@ -1,0 +1,40 @@
+{
+	"name": "svg-mcp-server",
+	"version": "1.0.0",
+	"description": "",
+	"main": ".smithery/index.cjs",
+	"module": "./src/index.ts",
+	"type": "module",
+	"scripts": {
+		"dev": "smithery dev",
+		"build": "smithery build",
+		"start": "tsx src/index.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.25.1",
+		"@smithery/sdk": "^3.0.1",
+		"@svgr/core": "^8.1.0",
+		"@svgr/plugin-jsx": "^8.1.0",
+		"@types/express": "^5.0.6",
+		"express": "^5.2.1",
+		"fast-xml-parser": "^5.3.3",
+		"pdfkit": "^0.17.2",
+		"sharp": "^0.34.5",
+		"svg-to-pdfkit": "^0.1.8",
+		"svgo": "^4.0.0",
+		"typescript": "^5.9.3",
+		"uuid": "^13.0.0",
+		"xml-formatter": "^3.6.7",
+		"zod": "^4"
+	},
+	"devDependencies": {
+		"@smithery/cli": "^1.6.7",
+		"@types/node": "^25.0.3",
+		"@types/pdfkit": "^0.17.4",
+		"@types/uuid": "^10.0.0",
+		"tsx": "^4.21.0"
+	}
+}

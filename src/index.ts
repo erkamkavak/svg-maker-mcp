@@ -428,30 +428,37 @@ export function createServerInstance() {
 }
 
 // Entry point
-const transport = process.env.MCP_TRANSPORT || "stdio";
+async function run() {
+  const transport = process.env.MCP_TRANSPORT || "stdio";
 
-if (transport === "stdio") {
-  const server = createServerInstance();
-  const stdioTransport = new StdioServerTransport();
-  await server.connect(stdioTransport);
-} else if (transport === "sse") {
-  const app = express();
-  const server = createServerInstance();
-  let sseTransport: SSEServerTransport;
+  if (transport === "stdio") {
+    const server = createServerInstance();
+    const stdioTransport = new StdioServerTransport();
+    await server.connect(stdioTransport);
+  } else if (transport === "sse") {
+    const app = express();
+    const server = createServerInstance();
+    let sseTransport: SSEServerTransport;
 
-  app.get("/sse", async (req, res) => {
-    sseTransport = new SSEServerTransport("/messages", res);
-    await server.connect(sseTransport);
-  });
+    app.get("/sse", async (req, res) => {
+      sseTransport = new SSEServerTransport("/messages", res);
+      await server.connect(sseTransport);
+    });
 
-  app.post("/messages", async (req, res) => {
-    if (sseTransport) {
-      await sseTransport.handlePostMessage(req, res);
-    }
-  });
+    app.post("/messages", async (req, res) => {
+      if (sseTransport) {
+        await sseTransport.handlePostMessage(req, res);
+      }
+    });
 
-  const port = process.env.PORT || 3000;
-  app.listen(port, () => {
-    console.error(`SSE Server listening on port ${port}`);
-  });
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+      console.error(`SSE Server listening on port ${port}`);
+    });
+  }
 }
+
+run().catch((error) => {
+  console.error("Server error:", error);
+  process.exit(1);
+});

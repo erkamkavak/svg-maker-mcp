@@ -70,11 +70,11 @@ export function createServerInstance() {
     "render_svg",
     {
       title: "Render SVG",
-      description: "Renders SVG code to a PNG image for visual verification.",
+      description: "Renders SVG code to a PNG image for visual verification. IMPORTANT: You should ALWAYS use this tool to preview your generated or modified SVG code to ensure it correctly fulfills the user's request and matches their visual intent.",
       inputSchema: z.object({
-        svg_code: z.string(),
-        width: z.number().optional(),
-        height: z.number().optional(),
+        svg_code: z.string().describe("The raw SVG XML string."),
+        width: z.number().optional().describe("Optional width to resize the output image."),
+        height: z.number().optional().describe("Optional height to resize the output image."),
       }),
     },
     async ({ svg_code, width, height }) => {
@@ -108,11 +108,11 @@ export function createServerInstance() {
     "save_svg",
     {
       title: "Save SVG",
-      description: "Saves the SVG code to a file on the local system.",
+      description: "Saves the SVG code to a file on the local system. Note: It is recommended to use 'render_svg' first to verify the visual result before saving.",
       inputSchema: z.object({
-        svg_code: z.string(),
-        filename: z.string(),
-        optimize: z.boolean().optional().default(true),
+        svg_code: z.string().describe("The raw SVG XML string."),
+        filename: z.string().describe("The name of the file to save (e.g., 'icon.svg')."),
+        optimize: z.boolean().optional().default(true).describe("Whether to optimize the SVG using SVGO before saving (default: true)."),
       }),
     },
     async ({ svg_code, filename, optimize: shouldOptimize }) => {
@@ -155,9 +155,9 @@ export function createServerInstance() {
     "optimize_svg",
     {
       title: "Optimize SVG",
-      description: "Optimizes and minifies SVG code using SVGO.",
+      description: "Optimizes and minifies SVG code using SVGO. After optimization, you should use 'render_svg' to ensure that the visual integrity of the image was maintained.",
       inputSchema: z.object({
-        svg_code: z.string(),
+        svg_code: z.string().describe("The raw SVG XML string."),
       }),
     },
     async ({ svg_code }) => {
@@ -182,9 +182,9 @@ export function createServerInstance() {
     "format_svg",
     {
       title: "Format SVG",
-      description: "Prettifies SVG code.",
+      description: "Prettifies (formats) SVG code with consistent indentation and line breaks.",
       inputSchema: z.object({
-        svg_code: z.string(),
+        svg_code: z.string().describe("The raw SVG XML string."),
       }),
     },
     async ({ svg_code }) => {
@@ -210,10 +210,10 @@ export function createServerInstance() {
     "svg_to_react",
     {
       title: "SVG to React",
-      description: "Converts SVG code to a React Functional Component.",
+      description: "Converts SVG code to a React Functional Component (JSX). Automatically handles camelCasing for attributes (e.g., stroke-width -> strokeWidth), converts 'class' to 'className', and transforms 'style' strings into React-style objects.",
       inputSchema: z.object({
-        svg_code: z.string(),
-        component_name: z.string().optional().default("SvgComponent"),
+        svg_code: z.string().describe("The raw SVG XML string."),
+        component_name: z.string().optional().default("SvgComponent").describe("The name of the generated React component (PascalCase recommended)."),
       }),
     },
     async ({ svg_code, component_name }) => {
@@ -239,10 +239,10 @@ export function createServerInstance() {
     "svg_to_react_native",
     {
       title: "SVG to React Native",
-      description: "Converts SVG code to a React Native Component.",
+      description: "Converts SVG code to a React Native Component using the 'react-native-svg' library. Maps standard SVG tags to their React Native equivalents (e.g., <path> -> <Path>) and ensures attributes are compatible.",
       inputSchema: z.object({
-        svg_code: z.string(),
-        component_name: z.string().optional().default("SvgComponent"),
+        svg_code: z.string().describe("The raw SVG XML string."),
+        component_name: z.string().optional().default("SvgComponent").describe("The name of the generated React Native component."),
       }),
     },
     async ({ svg_code, component_name }) => {
@@ -268,9 +268,9 @@ export function createServerInstance() {
     "svg_to_data_uri",
     {
       title: "SVG to Data URI",
-      description: "Converts SVG code into a base64-encoded Data URI.",
+      description: "Converts SVG code into a base64-encoded Data URI. Useful for embedding SVGs directly into HTML or CSS as background images.",
       inputSchema: z.object({
-        svg_code: z.string(),
+        svg_code: z.string().describe("The raw SVG XML string."),
       }),
     },
     async ({ svg_code }) => {
@@ -292,9 +292,9 @@ export function createServerInstance() {
     "svg_to_pdf",
     {
       title: "SVG to PDF",
-      description: "Converts SVG code into a PDF document.",
+      description: "Converts SVG code into a high-quality PDF document.",
       inputSchema: z.object({
-        svg_code: z.string(),
+        svg_code: z.string().describe("The raw SVG XML string."),
       }),
     },
     async ({ svg_code }) => {
@@ -329,9 +329,9 @@ export function createServerInstance() {
     "validate_svg",
      {
       title: "Validate SVG",
-      description: "Validates SVG code.",
+      description: "Validates SVG code for XML syntax, root element correctness, and standard tag usage. Detects potential rendering issues like missing dimensions or non-standard elements.",
       inputSchema: z.object({
-        svg_code: z.string(),
+        svg_code: z.string().describe("The raw SVG XML string."),
       }),
     },
     async ({ svg_code }) => {
@@ -346,9 +346,9 @@ export function createServerInstance() {
     "get_svg_metadata",
     {
       title: "Get SVG Metadata",
-      description: "Extracts metadata from SVG code.",
+      description: "Extracts high-level metadata from SVG code. Provides information like defined width, height, viewBox, and title.",
       inputSchema: z.object({
-        svg_code: z.string(),
+        svg_code: z.string().describe("The raw SVG XML string."),
       }),
     },
     async ({ svg_code }) => {

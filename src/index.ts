@@ -23,9 +23,7 @@ if (!fsSync.existsSync(OUTPUT_DIR)) {
   fsSync.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-export const configSchema = z.object({
-  // No config needed for now, but keeping structure
-});
+export const configSchema = z.object({});
 
 function validateSvgContent(svgCode: string): { valid: boolean; errors: string[]; warnings: string[] } {
   const errors: string[] = [];
@@ -387,7 +385,6 @@ export function createServerInstance() {
   return server;
 }
 
-// Entry point
 async function run() {
   const transport = process.env.MCP_TRANSPORT || "stdio";
 

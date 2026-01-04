@@ -1,8 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { z } from "zod";
-import express from "express";
 import sharp from "sharp";
 import { optimize } from "svgo";
 import format from "xml-formatter";
@@ -14,7 +12,7 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { SVG_TAGS } from "./svg_standards.js";
+import { SVG_TAGS } from "./svg_standards";
 
 const OUTPUT_DIR = path.join(process.cwd(), "output");
 
@@ -23,6 +21,8 @@ if (!fsSync.existsSync(OUTPUT_DIR)) {
   fsSync.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
+// Optional: Configuration schema for session
+// Smithery will use this to prompt users for configuration
 export const configSchema = z.object({});
 
 function validateSvgContent(svgCode: string): { valid: boolean; errors: string[]; warnings: string[] } {
@@ -51,6 +51,20 @@ function validateSvgContent(svgCode: string): { valid: boolean; errors: string[]
     if (!rootTag || rootTag.replace(/^.*:/, "") !== "svg") {
        errors.push(`Root element must be 'svg', found '${rootTag || "none"}'`);
     }
+
+    // Check for standard SVG tags
+    const checkTags = (obj: any) => {
+      for (const key in obj) {
+        if (typeof obj[key] === "object") {
+          const tagName = key.replace(/^.*:/, "");
+          if (tagName !== "svg" && !SVG_TAGS.has(tagName) && !key.startsWith("@_") && key !== "#text") {
+            warnings.push(`Non-standard SVG tag found: '${tagName}'`);
+          }
+          checkTags(obj[key]);
+        }
+      }
+    };
+    checkTags(jsonObj);
   } catch (e: any) {
     errors.push(`Parsing error: ${e.message}`);
   }
@@ -58,7 +72,13 @@ function validateSvgContent(svgCode: string): { valid: boolean; errors: string[]
   return { valid: errors.length === 0, errors, warnings };
 }
 
-export function createServerInstance() {
+/**
+ * Creates and configures the SVG Maker MCP Server.
+ * This is the Smithery-required default export.
+ * @param config - User configuration (from configSchema)
+ * @returns The raw MCP Server object
+ */
+export default function createServer({ config }: { config: z.infer<typeof configSchema> } = { config: {} }) {
   const server = new McpServer({
     name: "SVG Maker",
     version: "1.0.0",
@@ -382,40 +402,28 @@ export function createServerInstance() {
     }
   );
 
-  return server;
+  // Smithery requires returning the raw server object, not the McpServer wrapper
+  return server.server;
 }
 
-async function run() {
-  const transport = process.env.MCP_TRANSPORT || "stdio";
-
-  if (transport === "stdio") {
-    const server = createServerInstance();
-    const stdioTransport = new StdioServerTransport();
-    await server.connect(stdioTransport);
-  } else if (transport === "sse") {
-    const app = express();
-    const server = createServerInstance();
-    let sseTransport: SSEServerTransport;
-
-    app.get("/sse", async (req, res) => {
-      sseTransport = new SSEServerTransport("/messages", res);
-      await server.connect(sseTransport);
-    });
-
-    app.post("/messages", async (req, res) => {
-      if (sseTransport) {
-        await sseTransport.handlePostMessage(req, res);
-      }
-    });
-
-    const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-      console.error(`SSE Server listening on port ${port}`);
-    });
-  }
+/**
+ * Local development runner.
+ * Only executes when this file is run directly (not when imported by Smithery).
+ * Uses stdio transport for local testing with MCP clients.
+ */
+async function runLocal() {
+  const serverInstance = createServer();
+  const stdioTransport = new StdioServerTransport();
+  await serverInstance.connect(stdioTransport);
+  console.error("SVG Maker MCP server running on stdio transport");
 }
 
-run().catch((error) => {
-  console.error("Server error:", error);
-  process.exit(1);
-});
+// Only run when explicitly requested via environment variable
+// Smithery imports this module but doesn't set this flag
+// For local development: npm run start
+if (process.env.MCP_RUN_LOCAL === "true") {
+  runLocal().catch((error) => {
+    console.error("Server error:", error);
+    process.exit(1);
+  });
+}

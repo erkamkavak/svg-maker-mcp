@@ -8,18 +8,15 @@
 	"scripts": {
 		"dev": "smithery dev",
 		"build": "smithery build",
-		"start": "tsx src/index.ts"
+		"start": "MCP_RUN_LOCAL=true tsx src/index.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.25.1",
-		"@smithery/sdk": "^3.0.1",
 		"@svgr/core": "^8.1.0",
 		"@svgr/plugin-jsx": "^8.1.0",
-		"@types/express": "^5.0.6",
-		"express": "^5.2.1",
 		"fast-xml-parser": "^5.3.3",
 		"pdfkit": "^0.17.2",
 		"sharp": "^0.34.5",

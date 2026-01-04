@@ -1,7 +1,7 @@
 {
 	"name": "svg-mcp-server",
 	"version": "1.0.0",
-	"description": "",
+	"description": "A powerful MCP server for generating, optimizing, and converting SVGs. Supports rendering to PNG, PDF, and React/React Native components.",
 	"main": ".smithery/index.cjs",
 	"module": "./src/index.ts",
 	"type": "module",
@@ -10,8 +10,20 @@
 		"build": "smithery build",
 		"start": "MCP_RUN_LOCAL=true tsx src/index.ts"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"mcp",
+		"svg",
+		"graphics",
+		"design",
+		"react",
+		"optimization"
+	],
+	"homepage": "https://github.com/erkamkavak/svg-maker-mcp",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/erkamkavak/svg-maker-mcp.git"
+	},
+	"author": "Erkam Kavak",
 	"license": "ISC",
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.25.1",

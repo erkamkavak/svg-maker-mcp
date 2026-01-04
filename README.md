@@ -8,9 +8,8 @@ A robust Model Context Protocol (MCP) server for creating, rendering, converting
 - **Optimize SVG**: Minify and optimize SVG code using `svgo`.
 - **Convert to React**: Generate React functional components from SVG code using `@svgr/core`.
 - **Convert to React Native**: Generate React Native SVG components.
-- **Data URI**: Convert SVG to base64 Data URI.
 - **Format SVG**: Prettify SVG code.
-- **SVG to PDF**: Convert SVG code to PDF documents using `pdfkit`.
+- **Data URI**: Convert SVG to base64 Data URI.
 - **Validate SVG**: Check for XML errors and standard SVG compliance.
 - **Get Metadata**: Extract dimensions and title.
 
@@ -50,10 +49,15 @@ Add this to your configuration file (e.g., `~/.gemini/settings.json` or `claude_
 - **Returns**: Image Content (PNG).
 - **Description**: Renders SVG to PNG. **IMPORTANT**: Always use this to preview generated SVGs to ensure they match visual intent.
 
-### `save_svg`
+### `save_svg_to_server`
 - **Arguments**: `svg_code` (str), `filename` (str), `optimize` (boolean)
-- **Returns**: Path (Saved file).
-- **Description**: Optimizes and saves the SVG to a local file.
+- **Returns**: Text (Success/Error).
+- **Description**: Saves the SVG to the SERVER'S disk. Only use for local servers.
+
+### `get_svg_code`
+- **Arguments**: `svg_code` (str), `optimize` (boolean)
+- **Returns**: String (SVG Code).
+- **Description**: Returns SVG code (optionally optimized) for the AI to save to your local machine.
 
 ### `optimize_svg`
 - **Arguments**: `svg_code` (str)
@@ -74,10 +78,6 @@ Add this to your configuration file (e.g., `~/.gemini/settings.json` or `claude_
 ### `svg_to_data_uri`
 - **Arguments**: `svg_code` (str)
 - **Returns**: String (Base64 Data URI).
-
-### `svg_to_pdf`
-- **Arguments**: `svg_code` (str)
-- **Returns**: Path (PDF file).
 
 ### `validate_svg`
 - **Arguments**: `svg_code` (str)

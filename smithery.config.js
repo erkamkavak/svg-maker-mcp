@@ -5,8 +5,6 @@ export default {
     external: [
       // Native modules with binary bindings
       "sharp",           // Image processing - uses native bindings
-      "pdfkit",          // PDF generation - has complex dependencies
-      "svg-to-pdfkit",   // Works with pdfkit
       // ESM modules that use import.meta.url
       "svgo",            // SVG optimizer - uses css-tree which has ESM issues
       "css-tree",        // CSS parsing - uses createRequire(import.meta.url)

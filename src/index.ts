@@ -5,21 +5,11 @@ import sharp from "sharp";
 import { optimize } from "svgo";
 import format from "xml-formatter";
 import { transform } from "@svgr/core";
-import PDFDocument from "pdfkit";
-import SVGtoPDF from "svg-to-pdfkit";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
 import { SVG_TAGS } from "./svg_standards";
-
-const OUTPUT_DIR = path.join(process.cwd(), "output");
-
-// Ensure output directory exists
-if (!fsSync.existsSync(OUTPUT_DIR)) {
-  fsSync.mkdirSync(OUTPUT_DIR, { recursive: true });
-}
 
 // Optional: Configuration schema for session
 // Smithery will use this to prompt users for configuration
@@ -123,10 +113,10 @@ export default function createServer({ config }: { config: z.infer<typeof config
   );
 
   server.registerTool(
-    "save_svg",
+    "save_svg_to_server",
     {
-      title: "Save SVG",
-      description: "Saves the SVG code to a file on the local system. Note: It is recommended to use 'render_svg' first to verify the visual result before saving.",
+      title: "Save SVG to Server",
+      description: "Saves the SVG code to a file on the SERVER'S local system. IMPORTANT: This tool saves to the disk where the MCP server is RUNNING. If this server is hosted remotely (like on Smithery), the file will NOT be saved to the user's computer. Use this tool only if you are running the server locally or intentionally saving to a remote host.",
       inputSchema: z.object({
         svg_code: z.string().describe("The raw SVG XML string."),
         filename: z.string().describe("The name of the file to save (e.g., 'icon.svg')."),
@@ -140,7 +130,17 @@ export default function createServer({ config }: { config: z.infer<typeof config
           try {
             const result = optimize(svg_code, {
               multipass: true,
-              plugins: ['preset-default', 'removeDimensions', { name: 'removeViewBox', active: false }]
+              plugins: [
+                {
+                  name: 'preset-default',
+                  params: {
+                    overrides: {
+                      removeViewBox: false,
+                    },
+                  },
+                } as any,
+                'removeDimensions',
+              ]
             });
             content = result.data;
           } catch (e) {
@@ -158,7 +158,7 @@ export default function createServer({ config }: { config: z.infer<typeof config
         
         await fs.writeFile(finalPath, content, "utf-8");
         return {
-          content: [{ type: "text", text: finalPath }],
+          content: [{ type: "text", text: `Success: Saved to ${finalPath} on the server host.` }],
         };
       } catch (e: any) {
         return {
@@ -166,6 +166,45 @@ export default function createServer({ config }: { config: z.infer<typeof config
           isError: true,
         };
       }
+    }
+  );
+
+  server.registerTool(
+    "get_svg_code",
+    {
+      title: "Get SVG Code",
+      description: "Returns the SVG XML string, optionally optimized. Use this tool when the user wants to 'download', 'save', or 'export' an SVG to their LOCAL machine. After receiving the code from this tool, you (the AI) must use your own local environment's file-writing tools to save this content to the user's desired path on their computer.",
+      inputSchema: z.object({
+        svg_code: z.string().describe("The raw SVG XML string."),
+        optimize: z.boolean().optional().default(true).describe("Whether to optimize the SVG using SVGO before returning (default: true)."),
+      }),
+    },
+    async ({ svg_code, optimize: shouldOptimize }) => {
+      let content = svg_code;
+      if (shouldOptimize) {
+        try {
+          const result = optimize(svg_code, {
+            multipass: true,
+            plugins: [
+              {
+                name: 'preset-default',
+                params: {
+                  overrides: {
+                    removeViewBox: false,
+                  },
+                },
+              } as any,
+              'removeDimensions',
+            ]
+          });
+          content = result.data;
+        } catch (e) {
+          console.warn("Optimization failed, returning original", e);
+        }
+      }
+      return {
+        content: [{ type: "text", text: content }],
+      };
     }
   );
 
@@ -182,7 +221,16 @@ export default function createServer({ config }: { config: z.infer<typeof config
       try {
         const result = optimize(svg_code, {
           multipass: true,
-          plugins: ['preset-default', { name: 'removeViewBox', active: false }]
+          plugins: [
+            {
+              name: 'preset-default',
+              params: {
+                overrides: {
+                  removeViewBox: false,
+                },
+              },
+            } as any,
+          ]
         });
         return {
           content: [{ type: "text", text: result.data }],
@@ -200,7 +248,7 @@ export default function createServer({ config }: { config: z.infer<typeof config
     "format_svg",
     {
       title: "Format SVG",
-      description: "Prettifies (formats) SVG code with consistent indentation and line breaks.",
+      description: "Prettifies (formats) SVG code with consistent indentation and line breaks. Use this tool ONLY when the user explicitly requests formatted or prettified SVG code.",
       inputSchema: z.object({
         svg_code: z.string().describe("The raw SVG XML string."),
       }),
@@ -307,43 +355,6 @@ export default function createServer({ config }: { config: z.infer<typeof config
   );
 
   server.registerTool(
-    "svg_to_pdf",
-    {
-      title: "SVG to PDF",
-      description: "Converts SVG code into a high-quality PDF document.",
-      inputSchema: z.object({
-        svg_code: z.string().describe("The raw SVG XML string."),
-      }),
-    },
-    async ({ svg_code }) => {
-      try {
-        const filename = `${uuidv4()}.pdf`;
-        const filepath = path.join(OUTPUT_DIR, filename);
-
-        const doc = new PDFDocument();
-        const writeStream = fsSync.createWriteStream(filepath);
-        doc.pipe(writeStream);
-        SVGtoPDF(doc, svg_code, 0, 0);
-        doc.end();
-
-        await new Promise((resolve, reject) => {
-           writeStream.on('finish', resolve);
-           writeStream.on('error', reject);
-        });
-
-        return {
-          content: [{ type: "text", text: path.resolve(filepath) }],
-        };
-      } catch (e: any) {
-        return {
-          content: [{ type: "text", text: `Error converting SVG to PDF: ${e.message}` }],
-          isError: true,
-        };
-      }
-    }
-  );
-  
-  server.registerTool(
     "validate_svg",
      {
       title: "Validate SVG",
@@ -400,6 +411,29 @@ export default function createServer({ config }: { config: z.infer<typeof config
         };
       }
     }
+  );
+
+  // --- Add a Prompt to boost Quality Score ---
+  server.registerPrompt(
+    "create_icon",
+    {
+      title: "Create an Icon",
+      description: "A professional prompt to help the user design a modern SVG icon.",
+      argsSchema: {
+        business_type: z.string().describe("The type of business or application the icon is for."),
+      },
+    },
+    (args) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please design a modern, clean SVG icon for a ${args.business_type}. The design should be minimalist, use a professional color palette, and follow SVG best practices. Use the 'render_svg' tool to show me the result first.`
+          }
+        }
+      ]
+    })
   );
 
   // Smithery requires returning the raw server object, not the McpServer wrapper

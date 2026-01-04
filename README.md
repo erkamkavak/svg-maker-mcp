@@ -1,5 +1,7 @@
 # SVG Maker MCP Server (TypeScript)
 
+[![smithery badge](https://smithery.ai/badge/erkamkavak/svg-maker-mcp)](https://smithery.ai/server/erkamkavak/svg-maker-mcp)
+
 A robust Model Context Protocol (MCP) server for creating, rendering, converting, and optimizing SVG images.
 
 ## Features
